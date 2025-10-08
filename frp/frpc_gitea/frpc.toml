@@ -3,7 +3,7 @@ serverPort = "SERVER_PORT"
 
 [[proxies]]
 name = "CLIENT_NAME"
-type = "tcp"
+type = "http"
 localIP = "LOCAL_HOST"
 localPort = "LOCAL_PORT"
 remotePort = "REMOTE_PORT"

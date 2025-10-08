@@ -1,0 +1,58 @@
+services:
+  traefik:
+    hostname: traefik
+    container_name: traefik
+    image: traefik:v3.5
+    pull_policy: if_not_present
+    restart: always
+    command:
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --providers.docker
+      - --api
+      - --ping
+      - --certificatesresolvers.leresolver.acme.email=${EMAIL:-i@tosone.cn}
+      - --certificatesresolvers.leresolver.acme.tlschallenge=true
+      - --certificatesresolvers.leresolver.acme.caserver=${LETSENCRYPT_CASERVER:-https://acme-v02.api.letsencrypt.org/directory}
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ${VOLUME_PREFIX:-.}/traefik/acme.json:/acme.json
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - default
+    labels:
+      - "traefik.enable=false"
+  frps:
+    image: tosone/docker-tutorial:frps
+    container_name: frps
+    hostname: frps
+    restart: always
+    ports:
+      - "22:9022"
+      - "9000:9000"
+      - "9001:9001"
+      - "9002:9002"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.git.rule=Host(`git.tosone.cn`)"
+      - "traefik.http.routers.git.entrypoints=websecure"
+      - "traefik.http.routers.git.tls=true"
+      - "traefik.http.routers.git.tls.certresolver=leresolver"
+      - "traefik.http.routers.git.service=git-svc"
+      - "traefik.http.services.git-svc.loadbalancer.server.port=9003"
+      - "traefik.http.routers.tools.rule=Host(`tools.tosone.cn`)"
+      - "traefik.http.routers.tools.entrypoints=websecure"
+      - "traefik.http.routers.tools.tls=true"
+      - "traefik.http.routers.tools.tls.certresolver=leresolver"
+      - "traefik.http.routers.tools.service=tools-svc"
+      - "traefik.http.services.tools-svc.loadbalancer.server.port=9004"
+      - "traefik.docker.network=default"
+    networks:
+      - default

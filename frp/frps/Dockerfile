@@ -1,9 +1,9 @@
-FROM alpine:3.21
+FROM alpine:3.22
 
 LABEL maintainer="Tosone <i@tosone.cn>"
 
 ARG TARGETARCH
-ARG FRP_VERSION=0.62.1
+ARG FRP_VERSION=0.65.0
 
 RUN sed -i 's/https:\/\/dl-cdn.alpinelinux.org/https:\/\/mirrors.aliyun.com/g' /etc/apk/repositories && \
   apk add --no-cache pcre bash ca-certificates && \
@@ -25,4 +25,4 @@ CMD ["frps", "-c", "frps.toml"]
 
 # docker buildx build -t tosone/docker-tutorial:frps --push --platform linux/amd64,linux/arm64 .
 
-# docker run -d --name frps --hostname frps --restart always -p 9000:9000 -p 9001:9001 -p 9002:9002 tosone/docker-tutorial:frps
+# docker run -d --name frps --hostname frps --restart always -p 22:9022 -p 9000:9000 -p 9001:9001 -p 9002:9002 -p 9003:9003 tosone/docker-tutorial:frps
